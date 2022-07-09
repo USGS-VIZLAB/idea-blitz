@@ -51,3 +51,17 @@ vignettes/*.pdf
 
 # project data files
 bloom-bubbles/in/NGWOS Ecology Data KSummers/
+
+
+###### DO NOT EDIT BELOW THIS LINE ######
+
+# This section should not be edited without careful consideration
+# and peer review. It is ensuring that files containing encrypted
+# passwords and secrets information are not being committed to our
+# repository and remain local for the individual pipeline user.
+# Include vault dirs by default but ignore any of the secrets files.
+
+river-ridgelines/sb.vault/secrets/*
+!river-ridgelines/sb.vault/secrets/README
+river-ridgelines/sb.vault/users/*
+!river-ridgelines/sb.vault/users/README
