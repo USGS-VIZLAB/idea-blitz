@@ -1,79 +1,65 @@
-plot_linemap <- function(background_poly, line_data, line_data_no_streams,
-                         line_data_so3, line_data_so4,
-                         line_data_so5, line_data_so6, line_data_so7,
-                         bkgd_color, poly_color, line_fill_color, line_border_color, 
-                         width, height, outfile) {
-  
+plot_linemap <- function(line_data, vertical_exag_factor,line_thickness, palette_low, palette_high,
+                         states_poly, poly_color, states_mask, bkgd_color, google_font,
+                         text_color, usgs_logo_filepath, width, height, dim_units, res, outfile) {
+  # import font
+  font_add_google(google_font)
+  showtext_opts(dpi = 300, regular.wt = 400)
+  showtext_auto(enable = TRUE)
 
+  # usgs logo
+  usgs_logo <- magick::image_read(usgs_logo_filepath) %>%
+    magick::image_colorize(100, text_color)
   
-  jpeg(file=outfile, width = width, height = height, quality=100, res=300)
+  # set plot margin
+  plot_margin <- 0.025
   
-  opar <- par(mar=c(0,0,0,0), bg = bkgd_color)
-  plot(st_geometry(background_poly), col=poly_color, border = NA, bg = bkgd_color,
-       xlim = c(min(line_data$X), max(line_data$X)), ylim= c(min(line_data$Y), max(line_data$Y)))
-  # linemap(x = line_data, var = "value", k = 5, threshold = 1,
-  #         aes(col = "value"), lwd=0.8, border = line_border_color, add = TRUE)
-  # linemap(x = line_data, var = "value", k = 5, threshold = 1,
-  #         col = line_fill_color, lwd=0.8, border = line_border_color, add = TRUE)
-  # add_linemap(x = line_data, var = "value", k = 5, threshold = 1,
-  #         col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 0.1, add = TRUE)
-  # add_linemap(x = line_data_so3, var = "value_so3", k = 5, threshold = 1,
-  #                  col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 0.1, add = TRUE)
-  # add_linemap(x = line_data_so4, var = "value_so4", k = 5, threshold = 1,
-  #                  col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 0.3, add = TRUE)
-  # add_linemap(x = line_data_so5, var = "value_so5", k = 5, threshold = 1,
-  #                  col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 0.6, add = TRUE)
-  # add_linemap(x = line_data_so6, var = "value_so6", k = 5, threshold = 1,
-  #                  col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 0.8, add = TRUE)
-  # add_linemap(x = line_data_so7, var = "value_so7", k = 5, threshold = 1,
-  #                  col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 1, add = TRUE)
-  add_linemap(x = line_data_so7, var = "value", k = 5, threshold = 1,
-                   col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 1, add = TRUE)
-  add_linemap(x = line_data_so6, var = "value", k = 5, threshold = 1,
-              col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 0.8, add = TRUE)
-  add_linemap(x = line_data_so5, var = "value", k = 5, threshold = 1,
-              col = line_fill_color, lwd=0.8, border = line_border_color, alpha = 0.6, add = TRUE)
-  add_linemap(x = line_data_so4, var = "value", k = 5, threshold = 1,
-              col = line_fill_color, lwd=0.6, border = line_border_color, alpha = 0.3, add = TRUE)
-  add_linemap(x = line_data_so3, var = "value", k = 5, threshold = 1,
-              col = line_fill_color, lwd=0.6, border = line_border_color, alpha = 0.1, add = TRUE)
-  add_linemap(x = line_data_no_streams, var = "value", k = 5, threshold = 1,
-              col = line_fill_color, lwd=0.6, border = line_border_color, alpha = 0.1, add = TRUE)
-  par(opar)
+  # background
+  canvas <- grid::rectGrob(
+    x = 0, y = 0, 
+    width = 16, height = 9,
+    gp = grid::gpar(fill = bkgd_color, alpha = 1, col = bkgd_color)
+  )
   
-  dev.off()
+  line_plot <- ggplot() +
+    geom_sf(data=states_poly, color=poly_color, fill=poly_color) +
+    geom_path(data =line_data, 
+              aes(x = X, y = Y+(value*vertical_exag_factor), color=(value*vertical_exag_factor), group=Y_group), 
+              size=line_thickness) +
+    scale_colour_gradient(low=palette_low, high=palette_high) +
+    geom_sf(data=states_mask, fill=bkgd_color, color=NA) +
+    theme_void() +
+    theme(legend.position="none",
+          strip.text = element_blank())
+  
+  ggdraw(ylim = c(0,1), 
+         xlim = c(0,1)) +
+    # a background
+    draw_grob(canvas,
+              x = 0, y = 1,
+              height = 9, width = 16,
+              hjust = 0, vjust = 1) +
+    # line plot
+    draw_plot(line_plot,
+              x = 0.01,
+              y = -0.05,
+              height = 1,
+              width = 1) +
+    draw_label('If Rivers were Mountains',
+               x = plot_margin, y = 1-(plot_margin*1.5), 
+               size = 16, 
+               hjust = 0, 
+               vjust = 1,
+               fontfamily = google_font,
+               color = text_color,
+               lineheight = 1)  +
+    # add logo
+    draw_image(usgs_logo, x = plot_margin, y = plot_margin, width = 0.1, hjust = 0, vjust = 0, halign = 0, valign = 0)
+    
+  
+  ggsave(filename=outfile, width = width, height = height, dpi=res, units=dim_units)
+  return(outfile)
 }
 
-### Modified from https://github.com/riatelab/linemap/blob/master/R/linemap.R
-add_linemap <- function(x, var, k = 2, threshold = 1, col = "white",
-                             border = "black", lwd = 0.5, alpha=1, add = FALSE){
-  x[is.na(x[var]),var] <- 0
-  lat <- unique(x[,2])
-  lon <- unique(x[,1])
-  
-  if(!add){
-    graphics::plot(1:10, type = "n", axes = F,
-                   xlab = "", ylab="", asp = 1,
-                   xlim = c(min(x[,1]), max(x[,1])),
-                   ylim = c(min(x[,2]), max(x[,2])))
-  }
-  for (i in length(lat):1){
-    ly <- x[x[,2]==lat[i],]
-    ly[ly[var] < threshold, var] <- 0
-    yVals <- ly[,2] + ly[,var] * k
-    xVals <- ly[,1]
-    yVals[is.na(yVals)] <- lat[i]
-    yVals[1] <- lat[i] + min(ly[,var] * k)
-    yVals[length(yVals)] <- yVals[1]
-    graphics::polygon(xVals, yVals, border = NA, col = col)
-    if(length(yVals)>1){
-      for(j in 1:(length(yVals) - 1)){
-        if ((ly[j,var] > 0) | (ly[j+1,var] > 0)){
-          graphics::segments(xVals[j], yVals[j],
-                             xVals[j+1], yVals[j+1],
-                             col=alpha(border, alpha), lwd=lwd)
-        }
-      }
-    }
-  }
-}
+# to try:
+# geom polygon with gradient fill - top border = line w/ peaks
+
