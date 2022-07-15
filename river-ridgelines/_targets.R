@@ -49,27 +49,31 @@ p2 <- list(
             lat = c(y_min, y_max, y_max, y_min, y_min))
     ))), crs=p1_proj)
   }),
+  # Create a mask for the state polygon
   tar_target(p2_states_inverse, 
              sf::st_difference(p2_bounding_poly, st_buffer(st_union(p1_states_sf), p2_cell_size*1.5))),
+  # Build a grid covering the states
   tar_target(p2_grid_sf,
              sf::st_make_grid(cellsize = p2_cell_size, 
                               n=c(floor((p1_states_bbox$xmax-p1_states_bbox$xmin)/p2_cell_size), floor((p1_states_bbox$ymax-p1_states_bbox$ymin)/p2_cell_size)), 
                               offset = c(p1_states_bbox$xmin, p1_states_bbox$ymin), crs = st_crs(p1_proj))),
+  # Determine the overlap between the grid cells and the states
   tar_target(p2_grid_cells_in_states, st_intersects(p1_states_sf, p2_grid_sf) %>% unlist() %>% unique()),
+  # Determine the overlap between the grid cells and specific stream orders
   tar_target(p2_grid_cells_w_rivers, st_intersects(p1_streams_sf, p2_grid_sf) %>% unlist() %>% unique()),
-  # tar_target(p2_grid_cells_w_rivers_1, st_intersects(filter(p1_streams_sf, Strahler==1), p2_grid_sf) %>% unlist() %>% unique()),
-  # tar_target(p2_grid_cells_w_rivers_2, st_intersects(filter(p1_streams_sf, Strahler==2), p2_grid_sf) %>% unlist() %>% unique()),
   tar_target(p2_grid_cells_w_rivers_3, st_intersects(filter(p1_streams_sf, Strahler==3), p2_grid_sf) %>% unlist() %>% unique()),
   tar_target(p2_grid_cells_w_rivers_4, st_intersects(filter(p1_streams_sf, Strahler==4), p2_grid_sf) %>% unlist() %>% unique()),
   tar_target(p2_grid_cells_w_rivers_5, st_intersects(filter(p1_streams_sf, Strahler==5), p2_grid_sf) %>% unlist() %>% unique()),
   tar_target(p2_grid_cells_w_rivers_6, st_intersects(filter(p1_streams_sf, Strahler==6), p2_grid_sf) %>% unlist() %>% unique()),
   tar_target(p2_grid_cells_w_rivers_7, st_intersects(filter(p1_streams_sf, Strahler==7), p2_grid_sf) %>% unlist() %>% unique()),
+  # Set the values that will be assigned to cells containing streams, based on the stream order
   tar_target(p2_mapping_levels,
              tibble(
                stream_order = c(3,4,5,6,7),
-               value = c(500, 700, 1400, 2200, 3000)
+               value = c(900, 1300, 2000, 3500, 5000) # 500, 700, 1400, 2200, 3000
              )),
-  tar_target(p2_grid_data,
+  # Add attribute data to the grid, with values set based on the highest stream order in each cell
+  tar_target(p2_grid_data_sf,
              get_gridded_data(empty_grid = p2_grid_sf,
                               stream_mapping = p2_mapping_levels,
                               state_cells = p2_grid_cells_in_states,
@@ -81,13 +85,15 @@ p2 <- list(
                               stream_cells_so7 = p2_grid_cells_w_rivers_7,
                               min_value = 100,
                               no_data_value = 0)),
+  # Convert the gridded data to a dataframe with X and Y coordinates of the cell centroids
   tar_target(p2_line_data, {
-    grid_data_w_coords <- cbind(p2_grid_data, sf::st_coordinates(sf::st_centroid(sf::st_geometry(p2_grid_data))))
+    grid_data_w_coords <- cbind(p2_grid_data_sf, sf::st_coordinates(sf::st_centroid(sf::st_geometry(p2_grid_data_sf))))
     line_data <- as.data.frame(grid_data_w_coords[,c("X","Y","value"), drop=TRUE])
     return(line_data)
   }),
+  # For each row (latitude), interpolate the line data where values change between grid cells 
   tar_target(p2_line_data_interpolated,
-             interpolate_peaks(p2_line_data, p2_cell_size, seq_interval=100))
+             interpolate_peaks(p2_line_data, p2_cell_size, interp_interval=100))
 )
 # Generate the map
 p3 <- list(
@@ -98,13 +104,13 @@ p3 <- list(
     plot_linemap(line_data = p2_line_data_interpolated,
                  vertical_exag_factor = 5, 
                  line_thickness = 0.3,
-                 palette_low = '#EEEEE0',
-                 palette_high = '#3B352D',
+                 gradient_low = '#EEEEE0',
+                 gradient_high = '#3B352D',
                  states_poly = p1_states_sf,
                  poly_color = "#FFFFF0", 
                  states_mask = p2_states_inverse,
                  bkgd_color = '#EEEEE0',
-                 google_font = 'Marcellus SC', #'Alata' 'Viga' 'Julius Sans One' 'Marcellus SC' 'El Messiri' 'Arima Madurai' 'Aclonica' 'Spinnaker'
+                 google_font = 'Marcellus SC',
                  text_color = '#8C8B82',
                  usgs_logo_filepath = p3_usgs_logo_png,
                  width = 1600,
@@ -113,7 +119,6 @@ p3 <- list(
                  res = 100,
                  outfile = 'out/linemap.png'))
 )
-
 
 # Combined list of target outputs
 c(p1, p2, p3)
