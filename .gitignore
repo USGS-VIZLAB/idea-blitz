@@ -52,3 +52,7 @@ vignettes/*.pdf
 # project data files
 bloom-bubbles/in/NGWOS Ecology Data KSummers/
 !river-ridgelines/in/2021_usgs-logo-black.png
+waterfalls/in/us_waterfalls.csv
+hydrotech-highlight/_targets/*
+hydrotech-highlight/out
+hydrotech-highlight/tmp
