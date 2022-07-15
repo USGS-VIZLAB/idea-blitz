@@ -51,16 +51,15 @@ get_gridded_data <- function(empty_grid, stream_mapping, state_cells, stream_cel
 
 #' @title Interpolate peaks
 #' @description For grid cell centroids in each row (Y), when the value
-#' changes, linearly interpolated that change in the value across an 
+#' changes, linearly interpolate that change in the value across an 
 #' set of additional X values that increment by a specified interval
 #' @param line_data - data.frame of X and Y coordinates of grid cell centroids,
 #' and values for those coordinates (assigned in `get_gridded_data()`)
 #' @param cell_size - the cell_size of the gridded data
 #' @param interp_interval - interval by which to interpolate the X values.
-#' Must be less than the cell_size
+#' Must be less than the `cell_size`
 #' @return - a data.frame of X and Y coordinates of grid cell centroids and
-#' values for those coordinates (interpolated to a smaller `X` interval than
-#' dictated by the grid `cell_size` where values shift)
+#' values for those coordinates (interpolated to a smaller `X` interval where values change)
 interpolate_peaks <- function(line_data, cell_size, interp_interval) {
   if (interp_interval >= cell_size) {
     stop(message('The interpolation interval must be smaller than the cell size'))
