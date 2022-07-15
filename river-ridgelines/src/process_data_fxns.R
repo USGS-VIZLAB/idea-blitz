@@ -12,10 +12,10 @@
 #' @param state_cells - vector of grid cells that overlap the polygon of us states
 #' @param stream_cells - vector of grid cells that contain a stream of any Strahler order
 #' @param stream_cells_so3 - vector of grid cells that contain a 3rd order stream
-#' @param stream_cells_so4 - vector of grid cells that contain a 3rd order stream
-#' @param stream_cells_so5 - vector of grid cells that contain a 3rd order stream
-#' @param stream_cells_so6 - vector of grid cells that contain a 3rd order stream
-#' @param stream_cells_so7 - vector of grid cells that contain a 3rd order stream
+#' @param stream_cells_so4 - vector of grid cells that contain a 4th order stream
+#' @param stream_cells_so5 - vector of grid cells that contain a 5th order stream
+#' @param stream_cells_so6 - vector of grid cells that contain a 6th order stream
+#' @param stream_cells_so7 - vector of grid cells that contain a 7th order stream
 #' @param min_value - value to assign to cells w/i the states but w/o a stream
 #' @param no_data_value - value to assign to cells outside of the states
 #' @return A sf object of the grid polygons, with attributes indicating which stream
