@@ -8,4 +8,4 @@ tar_make()
 ```
 The pipeline generates this figure:
 
-![linemap](https://user-images.githubusercontent.com/54007288/179123520-2bd62463-22ea-4693-b621-cd740fe137b1.png)
+![linemap](https://user-images.githubusercontent.com/54007288/179124216-de9f16e6-79fc-4729-9ad6-f2b767454f35.png)
