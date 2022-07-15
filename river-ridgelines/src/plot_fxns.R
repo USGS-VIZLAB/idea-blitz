@@ -77,7 +77,7 @@ plot_linemap <- function(line_data, vertical_exag_factor,line_thickness, gradien
               height = 1,
               width = 1) +
     # title
-    draw_label('If Rivers were Mountains',
+    draw_label('If Rivers Were Mountains',
                x = plot_margin, y = 1-(plot_margin*1.5), 
                size = 16, 
                hjust = 0, 
