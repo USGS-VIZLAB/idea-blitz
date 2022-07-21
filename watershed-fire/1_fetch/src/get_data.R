@@ -10,13 +10,7 @@ get_fire_perim <- function(url, perim_zip_path, perim_tmp_path, crs){
     unlist() %>%
     paste(perim_tmp_path, ., sep = "/")
   
-  perim <- st_read(mtbs_file_path) %>%
-    mutate(Year = str_sub(Ig_Date, start = 1L, end = 4L),
-           State = str_sub(Event_ID, start = 1L, end = 2L)) %>%
-    filter(Incid_Type %in% c("Wildfire", "Wildland Fire Use"),
-           State %in% conus) %>%
-    select(Event_ID, Incid_Name, Ig_Date, Year, State, Incid_Type, BurnBndAc, BurnBndLat, BurnBndLon) %>%
-    st_transform(crs = crs)
+  perim <- st_read(mtbs_file_path)
   
   return(perim)
 }
@@ -24,10 +18,14 @@ get_fire_perim <- function(url, perim_zip_path, perim_tmp_path, crs){
 # Get HUC water use assessment data
 # Can't figure out how to download directly from Box
 # Data available from https://usfs-public.app.box.com/v/Forests2Faucets/file/938183618458
-get_huc <- function(file_in, crs){
-  huc <- st_read(file_in) %>%
+get_huc <- function(file_in = NULL, layer = NULL, crs){
+  if(is.null(layer)){
+    out <- st_read(file_in)
+  }else{
+    out <- st_read(dsn = file_in, layer = layer)
+  }
+  out %>%
     st_transform(crs = crs)
-  return(huc)
 }
 
 # Get basemap tiles

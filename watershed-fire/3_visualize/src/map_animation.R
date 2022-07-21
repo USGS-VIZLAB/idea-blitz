@@ -1,5 +1,7 @@
 # Build static map for given year
-build_map <- function(basemap, fire_pts, year, col_fire){
+build_map_png <- function(basemap, fire_pts, year, col_fire, col_bg, file_out){
+  out_path <- sprintf("3_visualize/out/map_frames/%s", file_out)
+  
   # Load basemap
   basemap <- rast(basemap)
   
@@ -57,14 +59,19 @@ build_map <- function(basemap, fire_pts, year, col_fire){
     geom_text(aes(x= -Inf, y = -Inf, hjust = -0.5, vjust = -1.2,
                   label = ifelse(year %% 1 == 0, year, "")),
               size = 10, color = "gray70", fontface = "bold")
+    
+    # Export data
+    ggsave(filename = out_path,
+           bg = col_bg, height = 4, width = 6, units = "in", dpi = 300)
+  
+  return(out_path)
 }
 
 # Iterate building of maps over a range of years
 iterate_map_years <- function(basemap, fire_pts, start_year, end_year, col_fire, col_bg, out_image_dir){
   for(i in seq(from = start_year, to = end_year, by = 0.5)){
-    build_map(basemap = basemap, fire_pts = fire_pts, year = i, col_fire = col_fire) %>%
-      ggsave(filename = file.path(out_image_dir, paste0("map_", i, ".png")), 
-             bg = col_bg, height = 4, width = 6, units = "in", dpi = 300)
+    build_map(basemap = basemap, fire_pts = fire_pts, year = i, col_fire = col_fire)
+      
   }
   
   return(out_image_dir)
