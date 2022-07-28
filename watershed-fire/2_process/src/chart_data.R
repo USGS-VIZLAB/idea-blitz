@@ -30,3 +30,17 @@ build_chart_data <- function(years, perim, huc){
     mutate(name_f = factor(name, levels = c("Proportion of US water supply watersheds affected by wildfire (%)",
                                             "Consumers of water from affected watersheds (millions of people)")))
 }
+
+# Interpolate data to add data at the year+0.5 mark
+add_interp <- function(data, years){
+  data %>%
+    add_row(Year = rep(head(years, -1)+0.5, each = 2),
+            name = rep(.$name[1:2], times = length(years)-1),
+            name_f = rep(.$name_f[1:2], times = length(years)-1)) %>%
+    arrange(Year) %>%
+    mutate(Prev = lag(value, order_by = name),
+           Next = lead(value, order_by = name)) %>%
+    rowwise() %>%
+    mutate(y = ifelse(is.na(value), (mean(c(Prev, Next), na.rm = T)), value)) %>%
+    select(-c(Prev, Next))
+}

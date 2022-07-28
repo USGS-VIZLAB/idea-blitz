@@ -59,13 +59,55 @@ build_map <- function(basemap, fire_pts, year, col_fire){
               size = 10, color = "gray70", fontface = "bold")
 }
 
-# Iterate building of maps over a range of years
-iterate_map_years <- function(basemap, fire_pts, start_year, end_year, col_fire, col_bg, out_image_dir){
-  for(i in seq(from = start_year, to = end_year, by = 0.5)){
-    build_map(basemap = basemap, fire_pts = fire_pts, year = i, col_fire = col_fire) %>%
-      ggsave(filename = file.path(out_image_dir, paste0("map_", i, ".png")), 
-             bg = col_bg, height = 4, width = 6, units = "in", dpi = 300)
-  }
+
+# Build static map for given year
+build_graph <- function(chart_data, col_lines, year){
+  # Filter fire points to given year
+  chart_data_line <- chart_data 
   
-  return(out_image_dir)
+  chart_data_point <- chart_data %>%
+    filter(Year == year)
+  
+  # Build charts
+  ggplot() +
+    # Plot line graph
+    geom_glowline(data = chart_data, aes(x = Year, y = y, color = name)) +
+    # Plot points with alternated Year column (so entire lines are static and only point moves)
+    geom_glowpoint(data = chart_data_point, 
+                   aes(x = Year, y = y, color = name), size = 2) +
+    
+    # Styling
+    facet_wrap(~ name_f, ncol = 1, scales = "free_y") +
+    scale_color_manual(values = col_lines) +
+    ylab(NULL) +
+    theme(plot.background = element_rect(fill = "#262626", color = NA),
+          panel.background = element_rect(fill = "#262626", color = NA),
+          strip.background = element_blank(),
+          strip.text = element_text(color = "gray70", size = 10, face = "bold"),
+          strip.placement = "outside",
+          panel.spacing = unit(1/8, "in", data = NULL),
+          legend.position = "none",
+          axis.title.x = element_text(color = "gray70", size = 10),
+          panel.grid = element_line(color = "gray40"),
+          axis.text = element_text(color = "gray40"))
+}
+
+combine_plots <- function(chart_data, col_lines,
+                          basemap, fire_pts, col_fire,
+                          year, col_bg, height, width, file_out){
+  out_path <- sprintf("3_visualize/out/anim_frames/%s", file_out)
+  
+  plot_left <- build_map(basemap = basemap, fire_pts = fire_pts, year = year,
+                         col_fire = col_fire)
+  
+  plot_right <- build_graph(chart_data = chart_data, year = year,
+                            col_lines = col_lines)
+  
+  plot_grid(plot_left, plot_right, nrow = 1)
+  
+  # Export data
+  ggsave(filename = out_path,
+         bg = col_bg, height = height, width = width, units = "in", dpi = 300)
+  
+  return(out_path)
 }
