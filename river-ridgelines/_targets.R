@@ -97,6 +97,7 @@ p2 <- list(
 )
 # Generate the map
 p3 <- list(
+  # Load in USGS logo
   tar_target(p3_usgs_logo_png,
              'in/2021_usgs-logo-black.png',
              format='file'),
