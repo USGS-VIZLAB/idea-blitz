@@ -101,6 +101,7 @@ p3 <- list(
   tar_target(p3_usgs_logo_png,
              'in/2021_usgs-logo-black.png',
              format='file'),
+# Create the map
   tar_target(p3_linemap,
     plot_linemap(line_data = p2_line_data_interpolated,
                  vertical_exag_factor = 5, 
