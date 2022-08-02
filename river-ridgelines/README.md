@@ -1,6 +1,6 @@
 # river-ridgelines
 
-To run this repo, change your working directory to `river-ridgelines` and run `tar_make()`:
+To run this repo, change your working directory to `river-ridgelines` by creating a new `.Rproj` file or with `setwd()`. Then run `targets::tar_make()`:
 ```r
 setwd('river-ridgelines')
 library(targets)
