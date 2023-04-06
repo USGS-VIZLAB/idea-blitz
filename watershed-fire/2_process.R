@@ -8,8 +8,8 @@ p2_targets <- list(
   tar_target(Years,
              seq(min(year_range), max(year_range), by = 1)),
   
-  tar_target(Years_0.5,
-             seq(min(year_range), max(year_range), by = 0.5)),
+  tar_target(Years_expanded,
+             seq(min(year_range), max(year_range), by = 1/interpolation_factor)),
   
   # Build data for graphs
   tar_target(chart_data_init,
@@ -20,8 +20,8 @@ p2_targets <- list(
   
   # Add interpolated data at the half year
   tar_target(chart_data,
-             add_interp(data = chart_data_init,
-                        years = Years)),
+             add_interpolation(data = chart_data_init, 
+                               factor = 4)),
   
   # Prep fire perimeter data
   tar_target(perim_prepped,
